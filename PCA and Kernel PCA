@@ -1,0 +1,252 @@
+x = [9, 15, 25, 14, 10, 18, 0, 16, 5, 19, 16, 20]
+y = [39, 56, 93, 61, 50, 75, 32, 85, 42, 70, 66, 80]
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+x_bar = [i-np.mean(x) for i in x]
+y_bar = [i-np.mean(y) for i in y]
+
+plt.scatter(x_bar, y_bar, color='black', marker='x', s=20, label='Data Points')
+
+plt.xlabel('X-axis label', fontsize=12)
+plt.ylabel('Y-axis label', fontsize=12)
+plt.title('Your Scatter Plot Title', fontsize=14)
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.axhline(0, color='black', linewidth=0.8)
+plt.axvline(0, color='black', linewidth=0.8)
+
+
+x = np.linspace(-20, 20, 100)
+m = a_1[1]/a_1[0]
+y = m * x
+plt.plot(x, y, label=f'y = {m}x')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Plot of y = mx + c')
+
+
+x = np.linspace(-20, 20, 100)
+m = a_2[1]/a_2[0]
+y = m * x
+plt.plot(x, y, label=f'y = {m}x')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Plot of y = mx + c')
+
+
+plt.tight_layout()
+plt.show()
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Your dataset (from previous step)
+x = np.array([9, 15, 25, 14, 10, 18, 0, 16, 5, 19, 16, 20])
+y = np.array([39, 56, 93, 61, 50, 75, 32, 85, 42, 70, 66, 80])
+
+# 1. Centre the data
+# Calculate the mean of each variable
+mean_x = np.mean(x)
+mean_y = np.mean(y)
+
+# Centre the data by subtracting the mean
+x_centred = x - mean_x
+y_centred = y - mean_y
+
+# 2. Make the data matrix X
+# Stack the centred data vertically, then transpose to get features as columns
+X = np.vstack((x_centred, y_centred)).T
+
+# 3. Calculate the eigenvectors of S (covariance matrix)
+# Calculate the covariance matrix S
+S = np.cov(X.T) # X.T is used because np.cov expects variables as rows
+
+# Calculate the eigenvalues and eigenvectors of S
+eigenvalues, eigenvectors = np.linalg.eig(S)
+
+# --- IMPORTANT: Sort eigenvalues in descending order and reorder eigenvectors accordingly ---
+# Get the indices that would sort the eigenvalues in descending order
+sorted_indices = np.argsort(eigenvalues)[::-1]
+
+# Sort eigenvalues and eigenvectors based on these indices
+sorted_eigenvalues = eigenvalues[sorted_indices]
+sorted_eigenvectors = eigenvectors[:, sorted_indices] # Reorder columns of eigenvectors
+
+print("Sorted Eigenvalues:", sorted_eigenvalues)
+print("Sorted Eigenvectors (columns correspond to sorted eigenvalues):")
+print(sorted_eigenvectors)
+
+# --- New Code for Variance Plot (uses sorted eigenvalues) ---
+
+# Calculate the total variance
+total_variance = np.sum(sorted_eigenvalues)
+
+# Calculate the explained variance ratio for each principal component
+explained_variance_ratio = sorted_eigenvalues / total_variance
+
+print("\nExplained Variance Ratio for each component (sorted):")
+print(explained_variance_ratio)
+
+# Plotting the explained variance
+components = ['Principal Component 1', 'Principal Component 2'] # PC1 will now reliably be the one with most variance
+
+# Plotting
+plt.figure(figsize=(8, 5))
+plt.bar(components, explained_variance_ratio, color=['#1f77b4', 'C1'])
+plt.ylabel('Proportion of Variance Captured')
+plt.title('Variance Captured by Principal Components')
+plt.ylim(0, 1.1) # Adjusted y-axis limit to provide more space for text labels
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+# Add text labels on top of the bars
+for i, ratio in enumerate(explained_variance_ratio):
+    plt.text(i, ratio + 0.02, f'{ratio:.2f}', ha='center', va='bottom')
+
+plt.show()
+
+# You can also confirm the sum of explained variance ratios is 1 (or very close)
+print(f"\nTotal Explained Variance: {np.sum(explained_variance_ratio):.2f}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA, KernelPCA
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Define genres in fixed order and assign tab10 colors
+genres_ordered = ['blues', 'classical', 'country', 'disco', 'hiphop',
+                  'jazz', 'metal', 'pop', 'reggae', 'rock']
+tab10_colors = plt.cm.tab10(np.arange(10))
+genre_color_map = {genre: color for genre, color in zip(genres_ordered, tab10_colors)}
+
+# 1. Standardize the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 2. Apply PCA
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+explained_var = pca.explained_variance_ratio_ * 100  # Convert to %
+
+# 3. Plot standard PCA
+plt.figure(figsize=(12, 8))
+for genre in genres_ordered:
+    idxs = (y == genre)
+    plt.scatter(X_pca[idxs, 0], X_pca[idxs, 1], label=genre, alpha=0.6, color=genre_color_map[genre])
+
+plt.xlabel(f'Principal Component 1 ({explained_var[0]:.2f}% variance)', fontsize=20)
+plt.ylabel(f'Principal Component 2 ({explained_var[1]:.2f}% variance)', fontsize=20)
+plt.title('2D PCA of GTZAN Genres', fontsize=22)
+plt.legend(title='Genre', loc='upper right', fontsize=16, title_fontsize=18)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Bar chart of explained variance (Full PCA on all genres)
+plt.figure(figsize=(10, 6))
+plt.bar(range(1, len(explained_var) + 1), explained_var, color='skyblue', edgecolor='black')
+plt.xlabel('Principal Component', fontsize=14)
+plt.ylabel('Explained Variance (%)', fontsize=14)
+plt.title('Explained Variance by Principal Component (All Genres)', fontsize=16)
+plt.xticks(range(1, len(explained_var) + 1))
+plt.tight_layout()
+plt.show()
+
+# 4. Kernel PCA with Polynomial Kernel
+kpca_poly = KernelPCA(n_components=2, kernel='poly', degree=3)
+X_kpca_poly = kpca_poly.fit_transform(X_scaled)
+
+plt.figure(figsize=(12, 8))
+for genre in genres_ordered:
+    idxs = (y == genre)
+    plt.scatter(X_kpca_poly[idxs, 0], X_kpca_poly[idxs, 1], label=genre, alpha=0.6, color=genre_color_map[genre])
+
+plt.title("2D Kernel PCA (Polynomial Kernel, degree=3)", fontsize=22)
+plt.xlabel("Component 1", fontsize=20)
+plt.ylabel("Component 2", fontsize=20)
+plt.legend(title='Genre', loc='upper right', fontsize=16, title_fontsize=18)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# 5. Kernel PCA with RBF Kernel
+kpca_rbf = KernelPCA(n_components=2, kernel='rbf', gamma=0.03)
+X_kpca_rbf = kpca_rbf.fit_transform(X_scaled)
+
+plt.figure(figsize=(12, 8))
+for genre in genres_ordered:
+    idxs = (y == genre)
+    plt.scatter(X_kpca_rbf[idxs, 0], X_kpca_rbf[idxs, 1], label=genre, alpha=0.6, color=genre_color_map[genre])
+
+plt.title("2D Kernel PCA (RBF Kernel, γ=0.03)", fontsize=22)
+plt.xlabel("Component 1", fontsize=20)
+plt.ylabel("Component 2", fontsize=20)
+plt.legend(title='Genre', loc='upper right', fontsize=16, title_fontsize=18)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Colors for the two genres
+custom_colors = {'classical': 'orange', 'metal': 'pink'}
+
+# Filter to only classical and metal
+mask = np.isin(y, ['classical', 'metal'])
+X_filtered = X[mask]
+y_filtered = np.array(y)[mask]
+
+# Standardize
+scaler = StandardScaler()
+X_scaled_filtered = scaler.fit_transform(X_filtered)
+
+# PCA
+pca = PCA()
+X_pca_filtered = pca.fit_transform(X_scaled_filtered)
+explained_var = pca.explained_variance_ratio_ * 100
+
+# 1. Scatter plot (only classical vs metal)
+plt.figure(figsize=(10, 7))
+for genre in ['classical', 'metal']:
+    idxs = (y_filtered == genre)
+    plt.scatter(X_pca_filtered[idxs, 0], X_pca_filtered[idxs, 1],
+                label=genre, color=custom_colors[genre], alpha=0.7)
+
+plt.xlabel('Principal Component 1', fontsize=18)
+plt.ylabel('Principal Component 2', fontsize=18)
+plt.title('PCA: Classical vs Metal', fontsize=20)
+plt.legend(fontsize=16)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Redo PCA with all components
+pca_full = PCA()
+X_pca_full = pca_full.fit_transform(X_scaled)
+explained_var_full = pca_full.explained_variance_ratio_ * 100  # %
+
+# Plot explained variance for all PCs
+plt.figure(figsize=(12, 6))
+plt.bar(range(1, len(explained_var_full) + 1), explained_var_full, color='skyblue', edgecolor='black')
+plt.xlabel('Principal Component', fontsize=14)
+plt.ylabel('Explained Variance (%)', fontsize=14)
+plt.title('Explained Variance by Principal Component', fontsize=16)
+plt.xticks(range(1, len(explained_var_full) + 1))
+plt.tight_layout()
+plt.show()
